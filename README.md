@@ -21,15 +21,19 @@
 
 - [ ] Rename GitHub repo and set remote URL:
   - `git remote set-url origin git@github.com:<you>/<your-repo>.git`
-- [ ] Update project identity:
-  - root `package.json` (`name`)
-  - package scope names under `packages/*/package.json`
-  - visible app title/branding in `apps/web/src/app/app.html`
-  - repo references in `README.md` and `AGENTS.md`
+- [ ] Run automated rename script for project/package identity:
+  - `pnpm rename:project --name <your-project-name> --scope @<your-scope>`
+  - Example: `pnpm rename:project --name acme-app --scope @acme`
+  - Preview without writing files: `pnpm rename:project --name acme-app --scope @acme --dry-run`
+- [ ] Review and tweak branding text that should remain human-friendly:
+  - `apps/web/src/app/app.html`
+  - `README.md`
+  - `AGENTS.md`
 - [ ] Configure runtime environment values used by your app (API keys, DB URLs, auth secrets).
 - [ ] Update backend CORS origin(s) for your web URL(s) in `apps/api/src/app.ts`.
 - [ ] Add your first shared contracts in `packages/shared/src/schemas/index.ts` before wiring API/frontend features.
 - [ ] Validate baseline before feature work:
+  - `pnpm install`
   - `pnpm lint`
   - `pnpm test`
   - `pnpm build`

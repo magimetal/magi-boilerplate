@@ -15,6 +15,7 @@
     "test": "pnpm --filter @magi-boilerplate/utils build && pnpm --filter @magi-boilerplate/shared build && pnpm --filter api test && pnpm --filter web test",
     "lint": "eslint .",
     "knip": "knip",
+    "rename:project": "node ./scripts/rename-project.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "precommit:verify": "pnpm lint && pnpm format:check && pnpm test",
