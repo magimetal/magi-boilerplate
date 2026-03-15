@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.angular/
+*.local
+.DS_Store
+*.js.map
+coverage/
+.pnpm-store/
