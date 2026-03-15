@@ -1,105 +1,74 @@
 # PROJECT KNOWLEDGE BASE
 
 **Generated:** 2026-03-15
-**Purpose:** Forkable new-app boilerplate baseline
+**Commit:** d3176d9
+**Branch:** main
 
 ## OVERVIEW
 
-`magi-boilerplate` is a starter PNPM monorepo intended to be **forked** and adapted into new products.
-
-- Frontend: Angular (`apps/web`)
-- Backend: Bun + Hono (`apps/api`)
-- Shared contracts/helpers: `packages/shared`, `packages/utils`
-
-Treat this repository as a template foundation, not a fixed product domain.
-
-## TEMPLATE INTENT (IMPORTANT)
-
-- Prefer generic, reusable implementations over product-specific naming.
-- Keep cross-app contracts centralized in `packages/shared`.
-- Keep API responses normalized via shared helpers.
-- If domain-specific complexity is introduced, isolate it in feature folders and update this file.
+Forkable PNPM monorepo for a TypeScript full-stack starter. Angular web app (`apps/web`) + Bun/Hono API (`apps/api`) with shared contracts/helpers in `packages/*`.
 
 ## STRUCTURE
 
 ```text
-magi-boilerplate/
+threadspace/
 ├── apps/
-│   ├── api/               # Bun runtime API, Hono routes, Vitest node tests
-│   └── web/               # Angular app, Tailwind, Vitest/jsdom
+│   ├── api/                  # Bun runtime + Hono service
+│   └── web/                  # Angular 21 standalone app
 ├── packages/
-│   ├── shared/            # Zod schemas and shared types
-│   ├── utils/             # HTTP JSON response helpers used by API
-│   ├── config-eslint/     # Workspace ESLint flat config
-│   └── config-prettier/   # Workspace Prettier config
-├── eslint.config.cjs
-├── .prettierrc.cjs
-├── tsconfig.base.json
+│   ├── shared/               # Zod contracts/types for cross-app use
+│   ├── utils/                # API response envelope helpers
+│   ├── config-eslint/        # Flat ESLint config package (CJS)
+│   └── config-prettier/      # Prettier config package (CJS)
+├── scripts/rename-project.mjs
 └── pnpm-workspace.yaml
 ```
 
 ## WHERE TO LOOK
 
-| Task                           | Location                               | Notes                                               |
-| ------------------------------ | -------------------------------------- | --------------------------------------------------- |
-| Add API route                  | `apps/api/src/app.ts`                  | Route handlers should use `jsonOk/jsonError`        |
-| API runtime wiring             | `apps/api/src/index.ts`                | Bun default export (`port`, `fetch`, `idleTimeout`) |
-| Add frontend view              | `apps/web/src/app/`                    | Root component is `app.ts` + `app.html`             |
-| Shared request/response schema | `packages/shared/src/schemas/index.ts` | Zod source of truth                                 |
-| Shared API response helpers    | `packages/utils/src/http/`             | `jsonOk` / `jsonError`                              |
-| Lint rules                     | `packages/config-eslint/index.cjs`     | Imported by root + app-level eslint configs         |
-| Format rules                   | `packages/config-prettier/index.cjs`   | Root `.prettierrc.cjs` re-exports this              |
+| Task                                  | Location                                 | Notes                                                           |
+| ------------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| Add API route/middleware              | `apps/api/src/app.ts`                    | Hono composition root (`/health`, CORS, notFound)               |
+| Change Bun runtime behavior           | `apps/api/src/index.ts`                  | Default export consumed by Bun (`port`, `fetch`, `idleTimeout`) |
+| Add web UI behavior                   | `apps/web/src/app/`                      | Root shell in `app.ts` + `app.html`                             |
+| Update shared contract                | `packages/shared/src/schemas/index.ts`   | Zod source of truth for cross-app payloads                      |
+| Update API envelope format            | `packages/utils/src/http/`               | `jsonOk` and `jsonError` helpers                                |
+| Change workspace lint/format defaults | `packages/config-*/` + root config files | Shared config packages exported to apps                         |
 
 ## CODE MAP
 
-| Symbol                 | Type                         | Location                               | Role                   |
-| ---------------------- | ---------------------------- | -------------------------------------- | ---------------------- |
-| `app`                  | Hono instance                | `apps/api/src/app.ts`                  | API composition root   |
-| `HealthResponseSchema` | Zod schema                   | `packages/shared/src/schemas/index.ts` | Shared health contract |
-| `jsonOk` / `jsonError` | helper functions             | `packages/utils/src/http/*`            | Standard API envelope  |
-| `AppComponent`         | Angular standalone component | `apps/web/src/app/app.ts`              | Frontend shell         |
+| Symbol                 | Type                         | Location                               | Refs   | Role                       |
+| ---------------------- | ---------------------------- | -------------------------------------- | ------ | -------------------------- |
+| `app`                  | Hono instance                | `apps/api/src/app.ts`                  | 2      | API composition root       |
+| `HealthResponseSchema` | Zod schema                   | `packages/shared/src/schemas/index.ts` | 2      | Health response contract   |
+| `jsonOk` / `jsonError` | helper functions             | `packages/utils/src/http/*.ts`         | 1 each | Standard response envelope |
+| `AppComponent`         | Angular standalone component | `apps/web/src/app/app.ts`              | 2      | Web bootstrap shell        |
 
 ## CONVENTIONS
 
-- Package manager is PNPM (`pnpm-workspace.yaml`, root `packageManager` pin).
-- Backend runtime is Bun; API scripts use `bun run` / `bun build`.
-- API envelope is `{ ok: true, data }` or `{ ok: false, error }`.
-- API and shared packages use ESM with `.js` extensions in relative TS imports.
-- ESLint configs in `apps/*` are `.cjs` because those package.json files are `"type": "module"`.
-- Config packages exporting CommonJS (`.cjs`) also publish `.d.cts` declarations.
-- For typed config packages, `exports` must include both `types` and runtime `default`.
-- Prefer flat config arrays over deprecated `tseslint.config(...)` helper.
-- Test split is intentional: `apps/api` uses `src/**/*.test.ts`; `apps/web` uses `src/**/*.spec.ts`.
+- Workspace package manager is PNPM (`pnpm@10`, `pnpm-workspace.yaml`).
+- API runtime is Bun; API scripts use `bun run` / `bun build`.
+- API envelope shape is normalized: `{ ok: true, data }` or `{ ok: false, error }`.
+- Relative TS imports in API/shared/utils use runtime `.js` suffixes.
+- Test naming is intentionally split by app:
+  - API: `src/**/*.test.ts`
+  - Web: `src/**/*.spec.ts`
+- Shared config packages are CommonJS with typed exports (`index.cjs` + `index.d.cts`).
+- ESLint uses flat config arrays; root/apps extend `@magi-boilerplate/config-eslint`.
 
-## ANTI-PATTERNS
+## ANTI-PATTERNS (THIS PROJECT)
 
-- Do not return raw `c.json(...)` payloads when `jsonOk/jsonError` should be used.
-- Do not define duplicated contracts separately in frontend/backend.
-- Do not move API CORS origin without updating frontend local origin expectations.
-- Do not bypass workspace scripts with ad-hoc package manager commands.
-- Do not publish or reference `.cjs` config entrypoints without matching `.d.cts` declarations.
-- Do not use string-only `exports` for typed config packages.
-- Do not introduce new `tseslint.config(...)` usage.
-
-## TEMPLATE GUARDRAILS (ALWAYS / NEVER)
-
-### ALWAYS
-
-- Keep starter defaults stable and generic unless explicitly asked to specialize.
-- Update docs and contracts together when changing API shapes.
-- Validate tooling/config package changes with runtime + type checks (`pnpm lint` and targeted checks).
-
-### NEVER
-
-- Never leave AGENTS paths stale after config or package renames.
-- Never rely on `index.d.ts` for `.cjs` entrypoints; use `index.d.cts`.
-- Never hardcode project-specific business assumptions in shared boilerplate code.
+- Returning raw `c.json(...)` from API handlers when envelope helpers should be used.
+- Duplicating contracts independently in web/api instead of `packages/shared`.
+- Changing API CORS origin without validating local web origin expectations.
+- Publishing/declaring CJS config packages without matching `types` + runtime `exports` entries.
+- Converging on a single test glob across apps (breaks current toolchain split).
 
 ## UNIQUE STYLES
 
-- Angular root files follow CLI v21 naming (`app.ts`, `app.html`).
-- Root `pnpm test` builds shared packages before app tests.
-- `.npmrc` sets `strict-peer-dependencies=false` and `auto-install-peers=true` for smoother bootstrap installs.
+- Boilerplate-first: naming and structure stay generic for forkability.
+- Root `pnpm test` builds `@magi-boilerplate/utils` and `@magi-boilerplate/shared` before app tests.
+- `.npmrc` favors easier bootstrap (`strict-peer-dependencies=false`, `auto-install-peers=true`).
 
 ## COMMANDS
 
@@ -110,12 +79,11 @@ pnpm dev:web
 pnpm lint
 pnpm test
 pnpm build
-pnpm --filter api test
-pnpm --filter web test
+pnpm format:check
 ```
 
 ## NOTES
 
-- API dev URL: `http://localhost:3000`
-- Frontend dev URL: `http://localhost:4200`
-- Add child `AGENTS.md` files only where behavior diverges from this root baseline.
+- Local defaults: API `http://localhost:3000`, Web `http://localhost:4200`.
+- No `.github/workflows` currently present; CI behavior is not repository-defined yet.
+- Add child `AGENTS.md` only where conventions diverge materially.
