@@ -1,4 +1,4 @@
 pre-commit:
   commands:
     verify:
-      run: pnpm precommit:verify
+      run: CI=true pnpm precommit:verify
