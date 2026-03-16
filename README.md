@@ -1,93 +1,64 @@
 # magi-boilerplate
 
-`magi-boilerplate` is a forkable full-stack starter monorepo for quickly launching a new app with a modern TypeScript stack.
+Forkable TypeScript monorepo starter: Angular web app + Bun/Hono API + shared workspace packages.
 
-## What this boilerplate gives you
+## What you get
 
-- **Frontend:** Angular 21 + Tailwind CSS v4 (`apps/web`)
-- **Backend:** Bun + Hono + AI SDK (`apps/api`)
+- **Web app:** Angular 21 standalone + Tailwind v4 (`apps/web`)
+- **API app:** Bun runtime + Hono (`apps/api`)
 - **Shared contracts:** Zod schemas/types (`packages/shared`)
-- **Shared API helpers:** normalized JSON response helpers (`packages/utils`)
-- **Shared tooling configs:** ESLint v9 and Prettier v3 (`packages/config-*`)
+- **Shared HTTP helpers:** standardized API envelopes (`packages/utils`)
+- **Shared tooling:** ESLint flat config + Prettier config + custom ESLint plugin (`packages/config-*`, `packages/eslint-plugin`)
 
-## Recommended first steps after forking
-
-1. Rename app/package metadata for your project (if needed).
-2. Update branding in `apps/web/src/app/app.html` and any docs.
-3. Adjust CORS and environment defaults for your deployment targets.
-4. Add your first feature through shared contracts first (`packages/shared`).
-
-## Fork checklist (copy/paste)
-
-- [ ] Rename GitHub repo and set remote URL:
-  - `git remote set-url origin git@github.com:<you>/<your-repo>.git`
-- [ ] Run automated rename script for project/package identity:
-  - `pnpm rename:project --name <your-project-name> --scope @<your-scope>`
-  - Example: `pnpm rename:project --name acme-app --scope @acme`
-  - Preview without writing files: `pnpm rename:project --name acme-app --scope @acme --dry-run`
-- [ ] Review and tweak branding text that should remain human-friendly:
-  - `apps/web/src/app/app.html`
-  - `README.md`
-  - `AGENTS.md`
-- [ ] Configure runtime environment values used by your app (API keys, DB URLs, auth secrets).
-- [ ] Update backend CORS origin(s) for your web URL(s) in `apps/api/src/app.ts`.
-- [ ] Add your first shared contracts in `packages/shared/src/schemas/index.ts` before wiring API/frontend features.
-- [ ] Validate baseline before feature work:
-  - `pnpm install`
-  - `pnpm lint`
-  - `pnpm test`
-  - `pnpm build`
-- [ ] Set up CI/CD and required repository secrets/variables.
-
-## Stack (current defaults)
-
-- PNPM workspace (`pnpm@10`)
-- Bun runtime (`@types/bun@1.3.10`)
-- Angular `21.2.x`
-- Hono `4.12.x`
-- AI SDK `6.0.x`
-- Zod `4.3.x`
-- Vitest `4.0.x` (backend + frontend)
-- ESLint v9 (shared flat config)
-- Prettier v3 (shared config)
+> `ai` is installed in `apps/api` dependencies but is not wired into routes yet.
 
 ## Workspace layout
 
 ```text
 .
 ├── apps/
-│   ├── api/                 # Bun + Hono backend
-│   └── web/                 # Angular frontend
+│   ├── api/                     # Bun + Hono service
+│   │   └── src/
+│   │       ├── app.ts           # Routes/middleware (/health, CORS, notFound)
+│   │       └── index.ts         # Bun runtime wiring + PORT parsing
+│   └── web/                     # Angular standalone app
+│       └── src/app/
+│           ├── app.ts           # Root component
+│           └── app.html         # Starter UI shell
 ├── packages/
-│   ├── config-eslint/       # Shared ESLint v9 config
-│   ├── config-prettier/     # Shared Prettier config
-│   ├── shared/              # Shared Zod schemas/types
-│   └── utils/               # Shared backend response helpers
-├── pnpm-workspace.yaml
-└── tsconfig.base.json
+│   ├── shared/                  # Shared Zod contracts/types
+│   ├── utils/                   # jsonOk/jsonError envelope helpers
+│   ├── eslint-plugin/           # Workspace ESLint rule package
+│   ├── config-eslint/           # Shared ESLint v9 flat config
+│   └── config-prettier/         # Shared Prettier config
+├── scripts/
+│   └── rename-project.mjs       # Fork rename utility
+├── lefthook.yml                 # Pre-commit hook entry
+└── pnpm-workspace.yaml
 ```
 
 ## Prerequisites
 
-- Node.js `>=20` (workspace tooling)
-- PNPM `>=10`
-- Bun `>=1.3`
+- Node.js `>=20` (root `engines.node`)
+- pnpm `>=10` (root `engines.pnpm`, package manager `pnpm@10.30.0`)
+- Bun (required for `apps/api` dev/build/start scripts)
 
-## Setup
+## Quick start
 
 ```bash
 pnpm install
+pnpm dev
 ```
 
-## Run locally
+`pnpm dev` runs API + web together via `concurrently`:
 
-Run each app in its own terminal:
+- API: `http://localhost:3000`
+- Web: `http://localhost:4200`
+
+Run separately if preferred:
 
 ```bash
-# Terminal 1: API (http://localhost:3000)
 pnpm dev:api
-
-# Terminal 2: Web (http://localhost:4200)
 pnpm dev:web
 ```
 
@@ -97,7 +68,7 @@ pnpm dev:web
 curl http://localhost:3000/health
 ```
 
-Expected shape:
+Response envelope:
 
 ```json
 {
@@ -109,30 +80,73 @@ Expected shape:
 }
 ```
 
-## Common commands
+## Root scripts
 
-From repo root:
+| Script                                               | Purpose                                                                |
+| ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| `pnpm dev`                                           | Run API + web concurrently                                             |
+| `pnpm dev:api`                                       | Run API only                                                           |
+| `pnpm dev:web`                                       | Run web only                                                           |
+| `pnpm lint`                                          | Lint workspace                                                         |
+| `pnpm test`                                          | Build `shared` + `utils`, test ESLint plugin, then run API + web tests |
+| `pnpm build`                                         | Build all workspace packages/apps                                      |
+| `pnpm knip`                                          | Check for unused files/deps/exports                                    |
+| `pnpm format`                                        | Format repo with Prettier                                              |
+| `pnpm format:check`                                  | Check formatting                                                       |
+| `pnpm precommit:verify`                              | Run lint + format check + tests                                        |
+| `pnpm rename:project --name <name> [--scope @scope]` | Rewrite boilerplate name/scope across repo                             |
 
-- `pnpm lint` — run ESLint across the workspace
-- `pnpm test` — build shared packages, then run API + web tests
-- `pnpm build` — build all workspace packages/apps
-- `pnpm format` — format all files with Prettier
-- `pnpm format:check` — check formatting only
+## Environment variables
 
-Targeted commands:
+Current runtime env handled in repo:
 
-- `pnpm --filter api dev|test|build|lint`
-- `pnpm --filter web dev|test|build|lint`
-- `pnpm --filter @magi-boilerplate/shared build`
-- `pnpm --filter @magi-boilerplate/utils build`
+| Variable | Used by                 | Default | Behavior                                                                     |
+| -------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
+| `PORT`   | `apps/api/src/index.ts` | `3000`  | Must be an integer in `0..65535`; missing/blank/invalid falls back to `3000` |
 
-## Boilerplate conventions
+No `.env` files are included by default.
 
-- API handlers should return normalized envelopes via `jsonOk` / `jsonError`.
-- Shared request/response contracts belong in `@magi-boilerplate/shared`.
-- Backend CORS default allows local web dev origin: `http://localhost:4200`.
+## Development conventions
 
-## Notes
+- Keep cross-app API contracts in `@magi-boilerplate/shared`.
+- Use `jsonOk` / `jsonError` from `@magi-boilerplate/utils` for API responses.
+- API default CORS origin is `http://localhost:4200` (`apps/api/src/app.ts`).
+- API relative TS imports use runtime `.js` suffixes (example: `import { app } from './app.js'`).
+- Base TypeScript config is strict (`strict`, `noImplicitAny`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, etc. in `tsconfig.base.json`).
 
-- This repo is intentionally generic and designed to be forked.
-- Keep cross-app contracts centralized to avoid frontend/backend drift.
+### Test naming split (intentional)
+
+- API tests: `apps/api/src/**/*.test.ts`
+- Web tests: `apps/web/src/**/*.spec.ts`
+
+Do not merge these patterns; each app’s Vitest config depends on this split.
+
+## Tooling details
+
+- ESLint is centralized via `@magi-boilerplate/config-eslint`.
+- Workspace plugin rules are in `@magi-boilerplate/eslint-plugin`.
+- Prettier config is centralized via `@magi-boilerplate/config-prettier`.
+- Git hooks are managed by Lefthook (`prepare` installs hooks, `lefthook.yml` runs `pnpm precommit:verify`).
+- `.npmrc` defaults are fork-friendly: `strict-peer-dependencies=false`, `auto-install-peers=true`.
+
+## Fork checklist
+
+- [ ] Rename git remote/repo as needed.
+- [ ] Rewrite project identity:
+  - `pnpm rename:project --name <your-project-name> --scope @<your-scope>`
+  - Preview only: `pnpm rename:project --name <name> --scope @<scope> --dry-run`
+- [ ] Update starter branding/content:
+  - `apps/web/src/app/app.html`
+  - `README.md`
+  - `AGENTS.md`
+- [ ] Update API CORS origin(s) in `apps/api/src/app.ts`.
+- [ ] Add first shared contracts in `packages/shared/src/schemas/index.ts` before implementing feature routes/UI.
+- [ ] Validate baseline:
+  - `pnpm lint`
+  - `pnpm format:check`
+  - `pnpm test`
+  - `pnpm build`
+
+## Design goal
+
+This repo stays intentionally generic for fast forking. Keep shared contracts and conventions centralized so frontend/backend drift is caught early.

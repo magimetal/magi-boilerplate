@@ -1,59 +1,56 @@
-# Web
+# web
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.1.
+Angular 21 standalone frontend app in the monorepo.
 
-## Development server
-
-To start a local development server, run:
+## Run from workspace root
 
 ```bash
-ng serve
+pnpm dev:web
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+App URL: `http://localhost:4200`
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+You can also run both apps together from root with:
 
 ```bash
-ng generate component component-name
+pnpm dev
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Package-level scripts
+
+From `apps/web`:
 
 ```bash
-ng generate --help
+pnpm dev
+pnpm build
+pnpm test
+pnpm lint
 ```
 
-## Building
-
-To build the project run:
+Equivalent root-filtered commands:
 
 ```bash
-ng build
+pnpm --filter web dev
+pnpm --filter web build
+pnpm --filter web test
+pnpm --filter web lint
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## App structure
 
-## Running unit tests
+- `src/main.ts` — bootstrap entry
+- `src/app/app.ts` — root standalone component
+- `src/app/app.html` — root template
+- `src/app/app.config.ts` — app-wide providers
+- `src/setup-vitest.ts` — Angular test environment setup
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Testing conventions
 
-```bash
-ng test
-```
+- Vitest entry point is `vitest.config.ts` (which imports `sharedVitestConfig` from `vitest.shared.ts`).
+- Test pattern is `src/**/*.spec.ts` (set in `vitest.shared.ts`).
+- Do not rename web tests to `*.test.ts` (that pattern is reserved for `apps/api`).
 
-## Running end-to-end tests
+## Notes
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Tailwind uses v4 CSS-first setup.
+- Keep monorepo contract usage through `@magi-boilerplate/shared` for API-bound data.
