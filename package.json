@@ -12,7 +12,7 @@
     "dev:api": "pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",
     "build": "pnpm -r build",
-    "test": "pnpm --filter @magi-boilerplate/utils build && pnpm --filter @magi-boilerplate/shared build && pnpm --filter api test && pnpm --filter web test",
+    "test": "pnpm --filter @magi-boilerplate/utils build && pnpm --filter @magi-boilerplate/shared build && pnpm --filter @magi-boilerplate/eslint-plugin test && pnpm --filter api test && pnpm --filter web test",
     "lint": "eslint .",
     "knip": "knip",
     "rename:project": "node ./scripts/rename-project.mjs",

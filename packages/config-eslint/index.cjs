@@ -1,5 +1,6 @@
 // @ts-check
 const tseslint = require('typescript-eslint');
+const boilerplatePlugin = require('@magi-boilerplate/eslint-plugin');
 
 /** @type {import('typescript-eslint').ConfigArray} */
 const config = [
@@ -18,6 +19,15 @@ const config = [
       ],
       'no-var': 'error',
       eqeqeq: ['error', 'always'],
+    },
+  },
+  {
+    plugins: {
+      '@magi-boilerplate': boilerplatePlugin,
+    },
+    rules: {
+      '@magi-boilerplate/one-export-per-file': 'error',
+      '@magi-boilerplate/max-file-lines': ['warn', { max: 500 }],
     },
   },
 ];
